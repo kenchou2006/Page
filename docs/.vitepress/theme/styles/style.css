@@ -1,0 +1,44 @@
+/* Minimal custom styles */
+
+/* Centered header block used on index pages */
+.home-center {
+  max-width: 720px;
+  margin: 0 auto 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 0 16px;
+}
+.home-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+}
+.home-name {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
+  text-align: center;
+  color: var(--vp-c-text-1);
+}
+.home-tagline {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--vp-c-text-2);
+}
+
+@media (min-width: 960px) {
+  .home-name { font-size: 2.25rem; }
+  .home-tagline { font-size: 1.1rem; }
+}
+
+/* Ensure Markdown below the header renders left-aligned under layout: page */
+.VPPage .content { text-align: initial; }
+.VPPage pre, .VPPage code, .VPPage pre code { text-align: left; }
+.VPPage pre { margin-top: 1rem; }
