@@ -12,7 +12,7 @@ export default defineConfig({
     googleAnalyticsId: 'G-N37FM9L8RQ',
     maxWidth: 4000,
     nav: [
-      { text: 'Rickroll', link: 'https://kenchou2006.github.io/rickroll-site' },
+      { text: 'Rickroll', link: '/Pages/Rickroll' },
       { text: 'Gravatar', link:'https://gravatar.com/kenchou2006'},
       { text: 'Links' , link:'/Pages/Links'},
       { text: 'About', link: '/Pages/About' },
