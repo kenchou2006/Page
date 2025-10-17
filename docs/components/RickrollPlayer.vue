@@ -15,7 +15,7 @@
     </div>
 
     <div class="scare">
-      <video ref="videoEl" id="video" class="video" loop playsinline webkit-playsinline></video>
+      <video ref="videoEl" id="video" class="video" loop playsinline></video>
     </div>
   </div>
 </template>
@@ -37,7 +37,8 @@ async function initHLS() {
 
   try {
     if (!HlsLib && typeof window !== 'undefined') {
-      const mod = await import('hls.js')
+      // Load hls.js from a pinned public ESM CDN at runtime to avoid bundling the dependency
+      const mod = await import('https://cdn.jsdelivr.net/npm/hls.js/dist/hls.mjs')
       HlsLib = mod.default || mod
     }
 
@@ -55,7 +56,7 @@ async function initHLS() {
       video.src = fallbackSrc
     }
   } catch (err) {
-    console.error('Failed to initialize HLS:', err)
+    console.error('Failed to initialize HLS (CDN import):', err)
     const video = videoEl.value
     if (video) video.src = fallbackSrc
   }
@@ -89,17 +90,26 @@ function updateGlobalLock() {
 
 function enterFullScreen() {
   const video = videoEl.value
-  const root = typeof document !== 'undefined' ? document.documentElement : null
   if (!video) return
-  // Prefer making the video element fullscreen so it sits on top of UI
-  if (video.requestFullscreen) return video.requestFullscreen()
-  // iOS Safari legacy full screen API
-  if (video.webkitEnterFullscreen) return video.webkitEnterFullscreen()
-  // Fallback to page-level fullscreen
-  if (root?.requestFullscreen) return root.requestFullscreen()
-  if (root?.webkitRequestFullscreen) return root.webkitRequestFullscreen()
-  if (root?.mozRequestFullScreen) return root.mozRequestFullScreen()
-  if (root?.msRequestFullscreen) return root.msRequestFullscreen()
+
+  // Prefer full-screening the overlay/container so the VitePress nav can be hidden reliably.
+  // Find the nearest overlay container (.scare) or fallback to the documentElement.
+  const container = video.closest?.('.scare') || video.parentElement || (typeof document !== 'undefined' ? document.documentElement : null)
+
+  // iOS Safari: try video-specific fullscreen first for native behavior
+  if (video.webkitEnterFullscreen) {
+    try { return video.webkitEnterFullscreen() } catch (e) { /* continue to container fullscreen */ }
+  }
+
+  // Request fullscreen on the container (preferred) so page-level styles apply and nav can be hidden.
+  if (container) {
+    const req = container.requestFullscreen || container.webkitRequestFullscreen || container.mozRequestFullScreen || container.msRequestFullscreen
+    if (req) return req.call(container)
+  }
+
+  // Fallback: try video requestFullscreen if available
+  const vidReq = video.requestFullscreen || video.webkitRequestFullscreen || video.mozRequestFullScreen || video.msRequestFullscreen
+  if (vidReq) return vidReq.call(video)
 }
 
 async function playVideo() {
@@ -281,7 +291,8 @@ a.overlay-link::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--vp-c-bg, #f5f6fa);
+  /* follow theme bg */
+  background-color: color-mix(in srgb, var(--vp-c-bg, #f5f6fa) 80%, transparent);
   padding: 0 24px;
 }
 
@@ -289,6 +300,7 @@ video#video {
   height: 100%;
   width: 100%;
   object-fit: cover;
+  background-color: var(--vp-c-bg, #000); /* ensure player background matches theme when video not loaded */
 }
 
 video#video::-webkit-media-controls-enclosure {

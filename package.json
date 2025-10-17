@@ -6,8 +6,5 @@
     "docs:dev": "vitepress dev docs --port ${PORT:-3000}",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs --port ${PORT:-3000}"
-  },
-  "dependencies": {
-    "hls.js": "^1.6.13"
   }
 }
