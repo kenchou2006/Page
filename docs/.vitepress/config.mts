@@ -2,11 +2,14 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: "KenChou's Site",
-  description: "A VitePress Site",
+  description: "周恭煥的網頁",
   appearance: true,
   lang: 'zh-Hant',
   cleanUrls: 'with-subfolders',
   // ignoreDeadLinks: true,
+  sitemap: {
+      hostname: 'https://zhiu.dev'
+  },
   themeConfig: {
     logo: 'https://avatars.githubusercontent.com/u/65105273?size=64',
     googleAnalyticsId: 'G-N37FM9L8RQ',
