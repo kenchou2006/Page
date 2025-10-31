@@ -13,6 +13,7 @@ export default defineConfig({
   themeConfig: {
     logo: 'https://avatars.githubusercontent.com/u/65105273?size=64',
     googleAnalyticsId: 'G-N37FM9L8RQ',
+    cloudflareAnalyticsToken: '12003598f3c749ac912a446057d4f6bc',
     maxWidth: 4000,
     nav: [
       { text: 'Rickroll', link: '/Pages/Rickroll' },
