@@ -35,6 +35,9 @@ async function initHLS() {
   const video = videoEl.value
   if (!video) return
 
+  // Ensure CORS is allowed for segment requests and help iOS load the media
+  try { video.crossOrigin = 'anonymous' } catch (e) { /* ignore in weird environments */ }
+
   try {
     if (!HlsLib && typeof window !== 'undefined') {
       // Load hls.js from a pinned public ESM CDN at runtime to avoid bundling the dependency
@@ -51,14 +54,23 @@ async function initHLS() {
       })
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       // Some Safari versions support native HLS
+      video.crossOrigin = 'anonymous'
       video.src = videoSrc
+      // Ensure the browser begins loading the manifest (helps on iOS)
+      try { video.load() } catch (e) { /* ignore */ }
     } else {
+      video.crossOrigin = 'anonymous'
       video.src = fallbackSrc
+      try { video.load() } catch (e) { /* ignore */ }
     }
   } catch (err) {
     console.error('Failed to initialize HLS (CDN import):', err)
     const video = videoEl.value
-    if (video) video.src = fallbackSrc
+    if (video) {
+      try { video.crossOrigin = 'anonymous' } catch (e) { /* ignore */ }
+      video.src = fallbackSrc
+      try { video.load() } catch (e) { /* ignore */ }
+    }
   }
 }
 
@@ -130,6 +142,13 @@ function onAccept(e) {
   playVideo()
 }
 
+function onDecline(e) {
+  e?.preventDefault?.()
+  // Hide the overlay but don't autoplay the video on decline
+  accepted.value = true
+  console.log('User declined — overlay hidden')
+}
+
 function beforeUnloadHandler(e) {
   if (accepted.value) {
     e.preventDefault()
@@ -166,8 +185,16 @@ function unbindFullscreenListeners() {
 }
 
 onMounted(() => {
-  initHLS()
+  // Ensure iOS gets the inline/fullscreen hint attributes that some linters disallow in templates
   const video = videoEl.value
+  if (video) {
+    try {
+      video.setAttribute('webkit-playsinline', '')
+      video.setAttribute('playsinline', '')
+    } catch (e) { /* ignore */ }
+  }
+
+  initHLS()
   if (video) {
     video.addEventListener('click', enterFullScreen)
   }
@@ -301,10 +328,6 @@ video#video {
   width: 100%;
   object-fit: cover;
   background-color: var(--vp-c-bg, #000); /* ensure player background matches theme when video not loaded */
-}
-
-video#video::-webkit-media-controls-enclosure {
-  display: none !important;
 }
 
 /* When active (fullscreen), hide nav and stretch to full viewport */
